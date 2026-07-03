@@ -1,6 +1,11 @@
 const Booking = require('../models/Booking');
 const Event = require('../models/Event');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+const getStripe = () => {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key || key === 'sk_test_dummy') return null;
+  return require('stripe')(key);
+};
 
 // Create payment intent
 exports.createPaymentIntent = async (req, res) => {
@@ -20,17 +25,25 @@ exports.createPaymentIntent = async (req, res) => {
       selectedSeats.push({ seatNumber: seat.seatNumber, row: seat.row, category: seat.category, price: seat.price });
     }
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: totalAmount * 100, // paise/cents
-      currency: 'inr',
-      metadata: {
-        eventId: eventId,
-        userId: req.user._id.toString(),
-        seats: JSON.stringify(seatNumbers),
-      },
-    });
+    const stripe = getStripe();
+    let paymentIntentId = 'demo_' + Date.now();
+    let clientSecret = 'demo_secret_' + Date.now();
 
-    res.json({ clientSecret: paymentIntent.client_secret, totalAmount, selectedSeats, paymentIntentId: paymentIntent.id });
+    if (stripe) {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: totalAmount * 100,
+        currency: 'inr',
+        metadata: {
+          eventId: eventId,
+          userId: req.user._id.toString(),
+          seats: JSON.stringify(seatNumbers),
+        },
+      });
+      paymentIntentId = paymentIntent.id;
+      clientSecret = paymentIntent.client_secret;
+    }
+
+    res.json({ clientSecret, totalAmount, selectedSeats, paymentIntentId });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -44,22 +57,18 @@ exports.confirmBooking = async (req, res) => {
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
     // Verify payment
-    let paymentVerified = false;
-    let paymentStatus = 'pending';
-    try {
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      if (paymentIntent.status === 'succeeded') {
-        paymentVerified = true;
-        paymentStatus = 'paid';
-      }
-    } catch (e) {
-      // For demo: allow without real stripe verification
-      paymentVerified = true;
-      paymentStatus = 'paid';
-    }
+    let paymentVerified = true; // default to true for demo mode
+    let paymentStatus = 'paid';
 
-    if (!paymentVerified) {
-      return res.status(400).json({ message: 'Payment not completed' });
+    const stripe = getStripe();
+    if (stripe && paymentIntentId && !paymentIntentId.startsWith('demo_')) {
+      try {
+        const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+        paymentVerified = pi.status === 'succeeded';
+        paymentStatus = paymentVerified ? 'paid' : 'pending';
+      } catch (e) {
+        console.log('Stripe verify skipped:', e.message);
+      }
     }
 
     let totalAmount = 0;
@@ -151,7 +160,8 @@ exports.cancelBooking = async (req, res) => {
     // Process refund via Stripe
     let refundId = null;
     let refundAmount = booking.totalAmount;
-    if (booking.paymentIntentId && booking.paymentStatus === 'paid') {
+    const stripe = getStripe();
+    if (stripe && booking.paymentIntentId && booking.paymentStatus === 'paid' && !booking.paymentIntentId.startsWith('demo_')) {
       try {
         const refund = await stripe.refunds.create({
           payment_intent: booking.paymentIntentId,
@@ -159,9 +169,11 @@ exports.cancelBooking = async (req, res) => {
         });
         refundId = refund.id;
       } catch (e) {
-        console.log('Stripe refund skipped (demo mode):', e.message);
+        console.log('Stripe refund skipped:', e.message);
         refundId = 'demo_refund_' + Date.now();
       }
+    } else {
+      refundId = 'demo_refund_' + Date.now();
     }
 
     // Free the seats

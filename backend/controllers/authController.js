@@ -1,6 +1,11 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+const getStripe = () => {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key || key === 'sk_test_dummy') return null;
+  return require('stripe')(key);
+};
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -11,16 +16,17 @@ exports.register = async (req, res) => {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: 'Email already in use' });
 
-    // Only admin can create vendor/admin accounts via this route restriction
     const allowedRole = ['customer', 'vendor'].includes(role) ? role : 'customer';
-
     const user = await User.create({ name, email, password, role: allowedRole, phone });
 
-    // Create Stripe customer
+    // Create Stripe customer (skip if no valid key)
     try {
-      const customer = await stripe.customers.create({ email: user.email, name: user.name });
-      user.stripeCustomerId = customer.id;
-      await user.save();
+      const stripe = getStripe();
+      if (stripe) {
+        const customer = await stripe.customers.create({ email: user.email, name: user.name });
+        user.stripeCustomerId = customer.id;
+        await user.save();
+      }
     } catch (e) {
       console.log('Stripe customer creation skipped:', e.message);
     }
