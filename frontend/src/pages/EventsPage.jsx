@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { getEvents } from '../services/api';
 import EventCard from '../components/common/EventCard';
 import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import styles from './EventsPage.module.css';
 
 const TYPES = ['', 'movie', 'concert', 'train', 'sports', 'theater', 'other'];
 
@@ -45,46 +46,45 @@ export default function EventsPage() {
   };
 
   return (
-    <div style={{ padding: '2rem 0', minHeight: '80vh' }}>
+    <div className={styles.pageWrapper}>
       <div className="container">
-        <h1 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '1.5rem' }}>Browse Events</h1>
+        <h1 className={styles.title}>Browse Events</h1>
 
         {/* Filters */}
-        <div style={styles.filterBar}>
-          <form onSubmit={handleSearch} style={styles.searchForm}>
+        <div className={styles.filterBar}>
+          <form onSubmit={handleSearch} className={styles.searchForm}>
             <Search size={16} color="#4b5563" />
             <input
-              className="form-input"
-              style={{ paddingLeft: '2.5rem', flex: 1, background: 'none', border: 'none' }}
+              className={`form-input ${styles.searchInput}`}
               placeholder="Search events..."
               value={filters.search}
               onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
             />
           </form>
 
-          <select className="form-input" style={{ width: 'auto' }}
+          <select className={`form-input ${styles.selectAuto}`}
             value={filters.type}
             onChange={e => setFilters(f => ({ ...f, type: e.target.value, page: 1 }))}>
             {TYPES.map(t => <option key={t} value={t}>{t ? t.charAt(0).toUpperCase() + t.slice(1) : 'All Types'}</option>)}
           </select>
 
-          <input className="form-input" style={{ width: '160px' }} placeholder="City"
+          <input className={`form-input ${styles.cityInput}`} placeholder="City"
             value={filters.city}
             onChange={e => setFilters(f => ({ ...f, city: e.target.value, page: 1 }))} />
         </div>
 
-        <p style={{ color: '#8892a4', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+        <p className={styles.summaryText}>
           {loading ? 'Loading...' : `${total} event${total !== 1 ? 's' : ''} found`}
         </p>
 
-        <div style={styles.grid}>
+        <div className={styles.grid}>
           {loading
-            ? Array(8).fill(0).map((_, i) => <div key={i} style={styles.skeleton} className="pulse" />)
+            ? Array(8).fill(0).map((_, i) => <div key={i} className={`${styles.skeleton} pulse`} />)
             : events.length
               ? events.map(event => <EventCard key={event._id} event={event} />)
               : (
-                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: '#8892a4' }}>
-                  <p style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎟️</p>
+                <div className={styles.emptyState}>
+                  <p className={styles.emptyStateTitle}>🎟️</p>
                   <p>No events found. Try adjusting your filters.</p>
                 </div>
               )
@@ -93,13 +93,13 @@ export default function EventsPage() {
 
         {/* Pagination */}
         {pages > 1 && (
-          <div style={styles.pagination}>
+          <div className={styles.pagination}>
             <button className="btn btn-outline btn-sm"
               disabled={filters.page <= 1}
               onClick={() => setFilters(f => ({ ...f, page: f.page - 1 }))}>
               <ChevronLeft size={16} /> Prev
             </button>
-            <span style={{ color: '#8892a4', fontSize: '0.875rem' }}>Page {filters.page} of {pages}</span>
+            <span className={styles.paginationText}>Page {filters.page} of {pages}</span>
             <button className="btn btn-outline btn-sm"
               disabled={filters.page >= pages}
               onClick={() => setFilters(f => ({ ...f, page: f.page + 1 }))}>
@@ -111,27 +111,3 @@ export default function EventsPage() {
     </div>
   );
 }
-
-const styles = {
-  filterBar: {
-    display: 'flex', gap: '0.75rem', marginBottom: '1.5rem',
-    background: '#1a1a2e', border: '1px solid #2a2a4a',
-    borderRadius: '12px', padding: '0.5rem',
-    flexWrap: 'wrap',
-  },
-  searchForm: {
-    flex: 1, display: 'flex', alignItems: 'center',
-    gap: '0.5rem', position: 'relative', minWidth: '200px',
-    paddingLeft: '0.5rem',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '1.25rem',
-  },
-  skeleton: { height: '280px', borderRadius: '12px', background: '#1a1a2e' },
-  pagination: {
-    display: 'flex', justifyContent: 'center', alignItems: 'center',
-    gap: '1rem', marginTop: '2.5rem',
-  },
-};

@@ -1,0 +1,140 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 5rem 0 3rem;
+  background: linear-gradient(160deg, #0f0f1a 0%, #1a1a2e 50%, #0f0f1a 100%);
+}
+.heroContent {
+  position: relative;
+  z-index: 1;
+}
+.heroBg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 40%, #6c63ff22, transparent 50%), radial-gradient(circle at 70% 60%, #ff658422, transparent 50%);
+  pointer-events: none;
+}
+.heroContent {
+  position: relative;
+  z-index: 1;
+}
+.highlight {
+  color: #6c63ff;
+}
+.heroTitle {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+.heroSub {
+  color: #8892a4;
+  font-size: 1.1rem;
+  max-width: 500px;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  max-width: 560px;
+}
+.searchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  outline: none;
+}
+.statsBand {
+  display: flex;
+  gap: 2.5rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+.statVal {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6c63ff;
+}
+.statLbl {
+  font-size: 0.8rem;
+  color: #8892a4;
+  margin-top: 2px;
+}
+.sectionPadding {
+  padding: 3rem 0 1rem;
+}
+.typeFilter {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.typeBtn {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid #2a2a4a;
+  background: none;
+  color: #8892a4;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.typeBtnActive {
+  background: #6c63ff;
+  border-color: #6c63ff;
+  color: #fff;
+}
+.cardsGrid {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+.noEvents {
+  color: #8892a4;
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 3rem;
+}
+.ctaCenter {
+  text-align: center;
+  margin-top: 2rem;
+}
+.features {
+  padding: 4rem 0;
+  background: #16213e22;
+}
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+.featureGrid {
+  margin-top: 2rem;
+}
+.featureDesc {
+  color: #8892a4;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.featureCard {
+  text-align: center;
+  padding: 2rem;
+}
+.featureIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: #16213e;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

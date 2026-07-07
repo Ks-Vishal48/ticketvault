@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/common/Navbar';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import LiveNotifications from './components/common/LiveNotifications';
+import styles from './App.module.css';
 
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -47,10 +48,10 @@ function AppRoutes() {
         } />
 
         <Route path="*" element={
-          <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
-            <p style={{ fontSize: '4rem' }}>🎟️</p>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Page Not Found</h2>
-            <p style={{ color: '#8892a4', marginBottom: '1.5rem' }}>The page you're looking for doesn't exist.</p>
+          <div className={styles.notFound}>
+            <p className={styles.notFoundIcon}>🎟️</p>
+            <h2 className={styles.notFoundTitle}>Page Not Found</h2>
+            <p className={styles.notFoundText}>The page you're looking for doesn't exist.</p>
             <a href="/" className="btn btn-primary">Go Home</a>
           </div>
         } />

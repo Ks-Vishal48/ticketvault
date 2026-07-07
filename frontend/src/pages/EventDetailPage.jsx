@@ -8,6 +8,7 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import { MapPin, Calendar, Clock, Tag, Info } from 'lucide-react';
 import { formatDate, formatTime, formatCurrency, getEventTypeBadge } from '../utils/helpers';
 import toast from 'react-hot-toast';
+import styles from './EventDetailPage.module.css';
 
 const stripePromise = loadStripe('pk_test_51PlaceYourPublishableKeyHere');
 
@@ -43,21 +44,21 @@ function CheckoutForm({ selectedSeats, event, onSuccess }) {
   };
 
   return (
-    <form onSubmit={handlePay} style={styles.checkoutForm}>
-      <h3 style={{ marginBottom: '1rem' }}>Payment</h3>
-      <div style={styles.summary}>
+    <form onSubmit={handlePay} className={styles.checkoutForm}>
+      <h3 className={styles.sectionTitle}>Payment</h3>
+      <div className={styles.summary}>
         <p>Selected Seats: {selectedSeats.join(', ')}</p>
-        <p style={{ fontWeight: '700', fontSize: '1.2rem', color: '#6c63ff', marginTop: '0.5rem' }}>
+        <p className={styles.totalAmount}>
           Total: {formatCurrency(totalAmount)}
         </p>
       </div>
-      <div style={{ padding: '0.75rem', background: '#0f0f1a', borderRadius: '8px', border: '1px solid #2a2a4a' }}>
+      <div className={styles.cardElementWrapper}>
         <CardElement options={{ style: { base: { color: '#e2e8f0', fontSize: '14px' } } }} />
       </div>
-      <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={processing || !stripe}>
+      <button className={`btn btn-primary ${styles.paymentButton}`} disabled={processing || !stripe}>
         {processing ? <><span className="spinner" /> Processing...</> : `Pay ${formatCurrency(totalAmount)}`}
       </button>
-      <p style={{ fontSize: '0.75rem', color: '#8892a4', textAlign: 'center', marginTop: '0.5rem' }}>
+      <p className={styles.paymentDisclaimer}>
         🔒 Demo mode: No actual charge will be made
       </p>
     </form>
@@ -108,20 +109,20 @@ export default function EventDetailPage() {
     }
   };
 
-  if (loading) return <div className="page-loader"><div className="spinner" style={{ width: 40, height: 40 }} /></div>;
+  if (loading) return <div className="page-loader"><div className={`spinner ${styles.spinnerSmall}`} /></div>;
   if (!event) return null;
 
   return (
-    <div style={{ padding: '2rem 0' }}>
+    <div className={styles.pageWrapper}>
       <div className="container">
-        <div style={styles.hero}>
-          <div style={styles.heroContent}>
-            <span className={`badge ${getEventTypeBadge(event.type)}`} style={{ marginBottom: '0.5rem', width: 'fit-content' }}>
+        <div className={styles.heroCard}>
+          <div className={styles.heroContent}>
+            <span className={`badge ${getEventTypeBadge(event.type)}`}>
               {event.type}
             </span>
-            <h1 style={styles.title}>{event.title}</h1>
-            <p style={styles.desc}>{event.description}</p>
-            <div style={styles.metaRow}>
+            <h1 className={styles.title}>{event.title}</h1>
+            <p className={styles.desc}>{event.description}</p>
+            <div className={styles.metaRow}>
               <span><Calendar size={16} /> {formatDate(event.date)} at {formatTime(event.date)}</span>
               <span><MapPin size={16} /> {event.venue?.name}, {event.venue?.city}</span>
               {event.duration && <span><Clock size={16} /> {event.duration} mins</span>}
@@ -129,9 +130,9 @@ export default function EventDetailPage() {
           </div>
         </div>
 
-        <div className="grid-2" style={{ gap: '2rem', marginTop: '2rem', alignItems: 'start' }}>
+        <div className={`grid-2 ${styles.gridTwo}`}>
           <div className="card">
-            <h2 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <h2 className={styles.cardHeader}>
               <Tag size={20} /> Select Seats
             </h2>
             <SeatMap
@@ -142,34 +143,34 @@ export default function EventDetailPage() {
             />
           </div>
 
-          <div style={{ position: 'sticky', top: '80px' }}>
+          <div className={styles.stickyPanel}>
             {!checkingOut ? (
               <div className="card">
                 <h3>Booking Summary</h3>
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #2a2a4a' }}>
-                  <p style={{ color: '#8892a4', marginBottom: '0.5rem' }}>
+                <div className={styles.summarySection}>
+                  <p className={styles.summaryText}>
                     {selectedSeats.length} seat{selectedSeats.length !== 1 ? 's' : ''} selected
                   </p>
                   {selectedSeats.map(sn => {
                     const seat = event.seats.find(s => s.seatNumber === sn);
                     return seat ? (
-                      <div key={sn} style={styles.seatLine}>
+                      <div key={sn} className={styles.seatLine}>
                         <span>{seat.seatNumber} ({seat.category})</span>
                         <span>{formatCurrency(seat.price)}</span>
                       </div>
                     ) : null;
                   })}
                 </div>
-                <div style={{ ...styles.seatLine, marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #2a2a4a', fontSize: '1.1rem', fontWeight: '700' }}>
+                <div className={`${styles.seatLine} ${styles.totalRow}`}>
                   <span>Total</span>
-                  <span style={{ color: '#6c63ff' }}>
+                  <span className={styles.totalValue}>
                     {formatCurrency(selectedSeats.reduce((sum, sn) => {
                       const seat = event.seats.find(s => s.seatNumber === sn);
                       return sum + (seat?.price || 0);
                     }, 0))}
                   </span>
                 </div>
-                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', justifyContent: 'center' }}
+                <button className={`btn btn-primary ${styles.checkoutButton}`}
                   disabled={selectedSeats.length === 0}
                   onClick={handleCheckout}>
                   Proceed to Payment
@@ -188,14 +189,3 @@ export default function EventDetailPage() {
     </div>
   );
 }
-
-const styles = {
-  hero: { background: '#1a1a2e', border: '1px solid #2a2a4a', borderRadius: '12px', padding: '2rem' },
-  heroContent: {},
-  title: { fontSize: '2rem', fontWeight: '700', marginBottom: '0.75rem' },
-  desc: { color: '#8892a4', lineHeight: 1.6, marginBottom: '1rem' },
-  metaRow: { display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.875rem', color: '#94a3b8' },
-  seatLine: { display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0' },
-  checkoutForm: {},
-  summary: { marginBottom: '1rem', padding: '1rem', background: '#16213e', borderRadius: '8px' },
-};

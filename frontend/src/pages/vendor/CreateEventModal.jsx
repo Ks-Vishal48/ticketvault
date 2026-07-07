@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { createEvent } from '../../services/api';
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
+import styles from './CreateEventModal.module.css';
 
 const TYPES = ['movie', 'concert', 'train', 'sports', 'theater', 'other'];
 const CATEGORIES = [
@@ -38,14 +39,14 @@ export default function CreateEventModal({ onClose, onCreated }) {
   };
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.modal}>
-        <div style={styles.header}>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <div className={styles.header}>
           <h2>Create New Event</h2>
-          <button style={styles.closeBtn} onClick={onClose}><X size={20} /></button>
+          <button className={styles.closeBtn} onClick={onClose}><X size={20} /></button>
         </div>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div className="grid-2">
             <div className="form-group">
               <label>Event Title *</label>
@@ -106,13 +107,13 @@ export default function CreateEventModal({ onClose, onCreated }) {
           </div>
 
           <div>
-            <p style={{ fontWeight: '600', marginBottom: '0.75rem' }}>Seat Layout</p>
+            <p className={styles.sectionTitle}>Seat Layout</p>
             {layout.map((cat, i) => (
-              <div key={cat.name} style={styles.layoutRow}>
-                <span style={styles.catLabel}>{cat.name}</span>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '0.75rem' }}>Rows</label>
-                  <input className="form-input" style={{ padding: '0.4rem' }}
+              <div key={cat.name} className={styles.layoutRow}>
+                <span className={styles.catLabel}>{cat.name}</span>
+                <div className={`form-group ${styles.noMargin}`}>
+                  <label className={styles.smallLabel}>Rows</label>
+                  <input className={`form-input ${styles.inputDense}`}
                     value={cat.rows.join(',')}
                     onChange={e => {
                       const updated = [...layout];
@@ -120,9 +121,9 @@ export default function CreateEventModal({ onClose, onCreated }) {
                       setLayout(updated);
                     }} />
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '0.75rem' }}>Seats/Row</label>
-                  <input className="form-input" type="number" style={{ padding: '0.4rem' }}
+                <div className={`form-group ${styles.noMargin}`}>
+                  <label className={styles.smallLabel}>Seats/Row</label>
+                  <input className={`form-input ${styles.inputDense}`} type="number"
                     value={cat.seatsPerRow}
                     onChange={e => {
                       const updated = [...layout];
@@ -130,9 +131,9 @@ export default function CreateEventModal({ onClose, onCreated }) {
                       setLayout(updated);
                     }} />
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '0.75rem' }}>Price (₹)</label>
-                  <input className="form-input" type="number" style={{ padding: '0.4rem' }}
+                <div className={`form-group ${styles.noMargin}`}>
+                  <label className={styles.smallLabel}>Price (₹)</label>
+                  <input className={`form-input ${styles.inputDense}`} type="number"
                     value={cat.price}
                     onChange={e => {
                       const updated = [...layout];
@@ -144,7 +145,7 @@ export default function CreateEventModal({ onClose, onCreated }) {
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+          <div className={styles.buttonRow}>
             <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? <><span className="spinner" /> Creating...</> : 'Create Event'}
@@ -155,25 +156,3 @@ export default function CreateEventModal({ onClose, onCreated }) {
     </div>
   );
 }
-
-const styles = {
-  overlay: {
-    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 1000, padding: '1rem',
-  },
-  modal: {
-    background: '#1a1a2e', border: '1px solid #2a2a4a',
-    borderRadius: '16px', width: '100%', maxWidth: '700px',
-    maxHeight: '90vh', overflow: 'auto',
-  },
-  header: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '1.5rem', borderBottom: '1px solid #2a2a4a',
-    position: 'sticky', top: 0, background: '#1a1a2e', zIndex: 1,
-  },
-  closeBtn: { background: 'none', border: 'none', color: '#8892a4', cursor: 'pointer' },
-  form: { padding: '1.5rem' },
-  layoutRow: { display: 'grid', gridTemplateColumns: '80px 1fr 1fr 1fr', gap: '0.75rem', alignItems: 'end', marginBottom: '0.75rem' },
-  catLabel: { fontSize: '0.85rem', fontWeight: '600', color: '#8892a4', paddingBottom: '0.4rem' },
-};

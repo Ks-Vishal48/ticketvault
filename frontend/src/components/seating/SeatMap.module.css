@@ -1,0 +1,161 @@
+.overflowXAuto {
+  overflow-x: auto;
+}
+.screen {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.screenBar {
+  height: 8px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(90deg, transparent, #6c63ff, transparent);
+  margin-bottom: 6px;
+}
+.screenLabel {
+  font-size: 0.7rem;
+  color: #4b5563;
+  letter-spacing: 0.2em;
+}
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rowLabel {
+  width: 20px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #4b5563;
+  font-weight: 600;
+}
+.rowSeats {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+.legendSwatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 2px solid;
+}
+.catPricing {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.catItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: #16213e;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+.catName {
+  color: #94a3b8;
+  font-weight: 600;
+}
+.catPrice {
+  color: #6c63ff;
+  font-weight: 700;
+}
+.catAvail {
+  color: #4b5563;
+  font-size: 0.75rem;
+}
+.seatButton {
+  width: 34px;
+  height: 34px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.seatButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+.seatBooked {
+  background: #1f2937;
+  border-color: #374151;
+  color: #4b5563;
+}
+.seatHeld {
+  background: #92400e;
+  border-color: #d97706;
+  color: #fbbf24;
+}
+.seatSelected {
+  background: #6c63ff;
+  border-color: #8b84ff;
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 0 12px #6c63ff88;
+}
+.seatVIP {
+  background: #2d1b6b;
+  border-color: #7c3aed;
+  color: #c4b5fd;
+}
+.seatPremium {
+  background: #0c2d4a;
+  border-color: #0284c7;
+  color: #7dd3fc;
+}
+.seatStandard {
+  background: #0c2d1e;
+  border-color: #059669;
+  color: #6ee7b7;
+}
+.seatEconomy {
+  background: #2d2006;
+  border-color: #d97706;
+  color: #fcd34d;
+}
+.legendAvailable {
+  background: #0c2d1e;
+  border-color: #059669;
+}
+.legendSelected {
+  background: #6c63ff;
+  border-color: #8b84ff;
+}
+.legendBooked {
+  background: #1f2937;
+  border-color: #374151;
+}
+.legendHeld {
+  background: #92400e;
+  border-color: #d97706;
+}

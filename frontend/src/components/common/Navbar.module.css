@@ -1,0 +1,98 @@
+.nav {
+  background: #1a1a2e;
+  border-bottom: 1px solid #2a2a4a;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+}
+.links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.link {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+.link:hover {
+  color: #fff;
+}
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.avatar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #16213e;
+  border-radius: 20px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+}
+.roleBadge {
+  background: #6c63ff22;
+  color: #a78bfa;
+  border-radius: 10px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.menuBtn {
+  background: none;
+  border: none;
+  color: #e2e8f0;
+  display: none;
+}
+.mobileMenu {
+  display: flex;
+  flex-direction: column;
+  background: #16213e;
+  border-top: 1px solid #2a2a4a;
+  padding: 1rem;
+}
+.mobileLink {
+  padding: 0.75rem;
+  color: #e2e8f0;
+  display: block;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+@media (max-width: 768px) {
+  .links {
+    display: none;
+  }
+  .menuBtn {
+    display: block;
+  }
+}

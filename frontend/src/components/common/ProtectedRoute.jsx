@@ -1,12 +1,13 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import styles from './ProtectedRoute.module.css';
 
 export default function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
 
   if (loading) return (
     <div className="page-loader">
-      <div className="spinner" style={{ width: 40, height: 40 }} />
+      <div className={`spinner ${styles.spinnerSmall}`} />
     </div>
   );
 

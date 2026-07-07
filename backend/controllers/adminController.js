@@ -69,6 +69,17 @@ exports.toggleUserStatus = async (req, res) => {
 exports.updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
+
+    // Enforce max 1 admin
+    if (role === 'admin') {
+      const adminCount = await User.countDocuments({ role: 'admin' });
+      const targetUser = await User.findById(req.params.id);
+      // Allow if target is already admin (no change), block if adding a new admin
+      if (targetUser.role !== 'admin' && adminCount >= 1) {
+        return res.status(400).json({ message: 'Only 1 admin account is allowed on this platform' });
+      }
+    }
+
     const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true });
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);

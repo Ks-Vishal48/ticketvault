@@ -1,0 +1,70 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.modal {
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow: auto;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #2a2a4a;
+  position: sticky;
+  top: 0;
+  background: #1a1a2e;
+  z-index: 1;
+}
+.closeBtn {
+  background: none;
+  border: none;
+  color: #8892a4;
+  cursor: pointer;
+}
+.form {
+  padding: 1.5rem;
+}
+.layoutRow {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr 1fr;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 0.75rem;
+}
+.catLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #8892a4;
+  padding-bottom: 0.4rem;
+}
+.smallLabel {
+  font-size: 0.75rem;
+  color: #8892a4;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+.noMargin {
+  margin: 0;
+}
+.inputDense {
+  padding: 0.4rem;
+}
+.buttonRow {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
