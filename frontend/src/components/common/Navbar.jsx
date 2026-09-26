@@ -16,7 +16,7 @@ export default function Navbar() {
 
   const dashboardLink = user?.role === 'admin'
     ? '/admin' : user?.role === 'vendor'
-    ? '/vendor' : '/dashboard';
+    ? '/vendor' : '/customer';
 
   return (
     <nav className={styles.nav}>

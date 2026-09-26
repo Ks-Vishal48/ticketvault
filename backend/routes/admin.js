@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const {
   getDashboardStats, getAllUsers, toggleUserStatus,
-  updateUserRole, getAllEventsAdmin
+  updateUserRole, getAllEventsAdmin, updateEventStatus
 } = require('../controllers/adminController');
 const { auth, requireRole } = require('../middleware/auth');
 
@@ -12,5 +12,6 @@ router.get('/users', getAllUsers);
 router.put('/users/:id/toggle', toggleUserStatus);
 router.put('/users/:id/role', updateUserRole);
 router.get('/events', getAllEventsAdmin);
+router.put('/events/:id/status', updateEventStatus);
 
 module.exports = router;

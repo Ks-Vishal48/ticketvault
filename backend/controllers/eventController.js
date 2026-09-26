@@ -74,6 +74,22 @@ exports.getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id).populate('vendor', 'name email');
     if (!event) return res.status(404).json({ message: 'Event not found' });
+    const now = new Date();
+  let modified = false;
+
+  // Clear expired holds dynamically
+  event.seats.forEach((seat) => {
+    if (seat.isHeld && seat.heldUntil && new Date(seat.heldUntil) < now) {
+      seat.isHeld = false;
+      seat.heldBy = null;
+      seat.heldUntil = null;
+      modified = true;
+    }
+  });
+
+  if (modified) {
+    await event.save();
+  }
     res.json(event);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -141,6 +157,7 @@ exports.holdSeats = async (req, res) => {
       seatUpdates.push(seat);
     }
     await event.save();
+      req.io.to(req.params.id).emit('seatsUpdated', { eventId: req.params.id, seats: seatNumbers, isHeld: true, status: 'held', heldBy: req.user._id.toString()  });
     res.json({ message: 'Seats held successfully', holdUntil, seats: seatUpdates });
   } catch (err) {
     res.status(500).json({ message: err.message });

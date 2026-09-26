@@ -3,19 +3,41 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getEventById, holdSeats, createPaymentIntent, confirmBooking } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import SeatMap from '../components/seating/SeatMap';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { MapPin, Calendar, Clock, Tag, Info } from 'lucide-react';
+import { MapPin, Calendar, Clock, Tag } from 'lucide-react';
 import { formatDate, formatTime, formatCurrency, getEventTypeBadge } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import styles from './EventDetailPage.module.css';
 
-const stripePromise = loadStripe('pk_test_51PlaceYourPublishableKeyHere');
+// Stripe imports
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-function CheckoutForm({ selectedSeats, event, onSuccess }) {
+// Load Stripe once outside the component so it's not re-created on every render
+const stripePromise = loadStripe('pk_test_51U9ciKH7NeAQjmNDm9nF991hyZDMyblTYKfCcZNFzBwNtsdobyPLnqG2FdZkEcXEzK3DP0r5PvS4BJDK4qrEcfgH00m7dKuD93');
+
+// Card element styling to match the dark theme
+const CARD_ELEMENT_OPTIONS = {
+  style: {
+    base: {
+      color: '#e2e8f0',
+      fontFamily: '"Inter", sans-serif',
+      fontSize: '16px',
+      '::placeholder': { color: '#4a5568' },
+      iconColor: '#6c63ff',
+    },
+    invalid: {
+      color: '#fc8181',
+      iconColor: '#fc8181',
+    },
+  },
+};
+
+// Inner form — must be a child of <Elements> to access useStripe/useElements
+function StripeCheckoutForm({ selectedSeats, event, onSuccess }) {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
+  const [cardError, setCardError] = useState('');
 
   const totalAmount = selectedSeats.reduce((sum, sn) => {
     const seat = event.seats.find(s => s.seatNumber === sn);
@@ -24,18 +46,37 @@ function CheckoutForm({ selectedSeats, event, onSuccess }) {
 
   const handlePay = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements) return; // Stripe.js not loaded yet
+
     setProcessing(true);
+    setCardError('');
 
     try {
-      // Create payment intent
+      // Step 1: Ask backend to create a PaymentIntent and get clientSecret
       const res = await createPaymentIntent({ eventId: event._id, seatNumbers: selectedSeats });
       const { clientSecret, paymentIntentId } = res.data;
 
-      // For demo, skip actual Stripe payment and just confirm booking
-      await confirmBooking({ eventId: event._id, seatNumbers: selectedSeats, paymentIntentId });
-      toast.success('Booking confirmed!');
-      onSuccess();
+      // Step 2: Confirm the card payment with Stripe directly from the browser
+      // This is where the real card details are sent — they never touch your server
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+        },
+      });
+
+      if (error) {
+        // Stripe declined or card error (e.g. insufficient funds, wrong CVC)
+        setCardError(error.message);
+        toast.error(error.message);
+        return;
+      }
+
+      if (paymentIntent.status === 'succeeded') {
+        // Step 3: Tell your backend the payment went through — it marks seats as booked
+        await confirmBooking({ eventId: event._id, seatNumbers: selectedSeats, paymentIntentId });
+        toast.success('Booking confirmed!');
+        onSuccess();
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Booking failed');
     } finally {
@@ -48,20 +89,38 @@ function CheckoutForm({ selectedSeats, event, onSuccess }) {
       <h3 className={styles.sectionTitle}>Payment</h3>
       <div className={styles.summary}>
         <p>Selected Seats: {selectedSeats.join(', ')}</p>
-        <p className={styles.totalAmount}>
-          Total: {formatCurrency(totalAmount)}
-        </p>
+        <p className={styles.totalAmount}>Total: {formatCurrency(totalAmount)}</p>
       </div>
+
+      {/* Real Stripe card input — handles card number, expiry, CVC */}
       <div className={styles.cardElementWrapper}>
-        <CardElement options={{ style: { base: { color: '#e2e8f0', fontSize: '14px' } } }} />
+        <CardElement options={CARD_ELEMENT_OPTIONS} />
       </div>
-      <button className={`btn btn-primary ${styles.paymentButton}`} disabled={processing || !stripe}>
+
+      {/* Show inline card errors (wrong CVC, expired card, etc.) */}
+      {cardError && (
+        <p style={{ color: '#fc8181', fontSize: '0.85rem', margin: 0 }}>{cardError}</p>
+      )}
+
+      <button
+        className={`btn btn-primary ${styles.paymentButton}`}
+        disabled={!stripe || processing}
+      >
         {processing ? <><span className="spinner" /> Processing...</> : `Pay ${formatCurrency(totalAmount)}`}
       </button>
       <p className={styles.paymentDisclaimer}>
-        🔒 Demo mode: No actual charge will be made
+        🔒 Secured by Stripe. Use test card: 4242 4242 4242 4242 · 12/29 · 123
       </p>
     </form>
+  );
+}
+
+// Wrapper that provides Stripe context to the inner form
+function CheckoutForm({ selectedSeats, event, onSuccess }) {
+  return (
+    <Elements stripe={stripePromise}>
+      <StripeCheckoutForm selectedSeats={selectedSeats} event={event} onSuccess={onSuccess} />
+    </Elements>
   );
 }
 
@@ -178,9 +237,7 @@ export default function EventDetailPage() {
               </div>
             ) : (
               <div className="card">
-                <Elements stripe={stripePromise}>
-                  <CheckoutForm selectedSeats={selectedSeats} event={event} onSuccess={() => navigate('/dashboard')} />
-                </Elements>
+                <CheckoutForm selectedSeats={selectedSeats} event={event} onSuccess={() => navigate('/customer')} />
               </div>
             )}
           </div>

@@ -107,3 +107,22 @@ exports.getAllEventsAdmin = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.updateEventStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ['published', 'cancelled', 'completed', 'draft'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+    const event = await Event.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    res.json({ message: `Event ${status}`, event });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

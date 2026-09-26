@@ -11,12 +11,20 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post('/payment-intent', auth, createPaymentIntent);
-router.post('/confirm', auth, confirmBooking);
-router.get('/my', auth, getUserBookings);
-router.get('/all', auth, requireRole('admin'), getAllBookings);
-router.get('/vendor', auth, requireRole('vendor', 'admin'), getVendorBookings);
-router.get('/:id', auth, getBookingById);
-router.post('/:id/cancel', auth, cancelBooking);
+// Inject io into req + apply auth to all routes
+router.use((req, res, next) => {
+  req.io = req.app.get('io');
+  next();
+});
+
+router.use(auth);  // all booking routes require login
+
+router.post('/payment-intent', createPaymentIntent);
+router.post('/confirm', confirmBooking);
+router.get('/my', getUserBookings);
+router.get('/all', requireRole('admin'), getAllBookings);
+router.get('/vendor', requireRole('vendor', 'admin'), getVendorBookings);
+router.get('/:id', getBookingById);
+router.post('/:id/cancel', cancelBooking);
 
 module.exports = router;

@@ -69,6 +69,13 @@
   flex-direction: column;
   gap: 1rem;
 }
+.summary {
+  padding: 0.75rem;
+  background: #0f0f1a;
+  border-radius: 8px;
+  border: 1px solid #2a2a4a;
+  font-size: 0.9rem;
+}
 .sectionTitle {
   margin-bottom: 1rem;
 }

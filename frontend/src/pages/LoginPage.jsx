@@ -6,6 +6,8 @@ import { Ticket, Mail, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import styles from './LoginPage.module.css';
 
+const getRoleRedirect = (role) => '/';
+
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -21,8 +23,7 @@ export default function LoginPage() {
       toast.dismiss('login');
       login(res.data.token, res.data.user);
       toast.success(`Welcome back, ${res.data.user.name}!`);
-      const role = res.data.user.role;
-      navigate(role === 'admin' ? '/admin' : role === 'vendor' ? '/vendor' : '/');
+      navigate(getRoleRedirect(res.data.user.role));
     } catch (err) {
       toast.dismiss('login');
       const msg = err.response?.data?.message || err.message || 'Login failed';
@@ -81,42 +82,6 @@ export default function LoginPage() {
         <p className={styles.footer}>
           Don't have an account? <Link to="/register" className={styles.linkAccent}>Register</Link>
         </p>
-
-        <div className={styles.demo}>
-          <p className={styles.demoTitle}>Demo Accounts</p>
-          <div className={styles.demoBtns}>
-            {[
-              { email: 'admin@ticketvault.com', role: 'Admin' },
-              { email: 'vendor@ticketvault.com', role: 'Vendor' },
-              { email: 'user@ticketvault.com', role: 'Customer' },
-            ].map(d => (
-              <button
-                key={d.role}
-                type="button"
-                className={styles.demoBtn}
-                onClick={async (e) => {
-                  e.preventDefault();
-                  setLoading(true);
-                  try {
-                    const res = await loginUser({ email: d.email, password: 'password123' });
-                    login(res.data.token, res.data.user);
-                    toast.success(`Welcome back, ${res.data.user.name}!`);
-                    const role = res.data.user.role;
-                    navigate(role === 'admin' ? '/admin' : role === 'vendor' ? '/vendor' : '/');
-                  } catch (err) {
-                    const msg = err.response?.data?.message || err.message || 'Login failed';
-                    toast.error(msg);
-                    console.error('Demo login error:', err);
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-              >
-                {d.role}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

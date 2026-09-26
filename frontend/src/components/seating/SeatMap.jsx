@@ -10,11 +10,7 @@ export default function SeatMap({ event, selectedSeats, onSeatToggle, currentUse
     if (!event?._id) return;
     socket.emit('joinEvent', event._id);
 
-    const handleUpdate = (data) => {
-      if (data.eventId === event._id) {
-        setSeats(data.seats);
-      }
-    };
+     const handleUpdate = (data) => { if (data.eventId === event._id) { setSeats((prevSeats) => prevSeats.map((seat) => { const identifier = seat.seatNumber || seat.id; if (data.seats.includes(identifier)) { return { ...seat, isHeld: data.isHeld ?? (data.status === 'held'), status: data.status || 'held', heldBy: data.heldBy || null, }; } return seat; }) ); } };
     socket.on('seatsUpdated', handleUpdate);
     return () => {
       socket.off('seatsUpdated', handleUpdate);

@@ -17,6 +17,7 @@ export default function CreateEventModal({ onClose, onCreated }) {
     title: '', description: '', type: 'movie',
     date: '', venue: { name: '', city: '', address: '' },
     image: '', duration: '', artist: '', language: '',
+    trainNumber: '', fromStation: '', toStation: '',
   });
   const [layout, setLayout] = useState(CATEGORIES);
   const [loading, setLoading] = useState(false);
@@ -93,16 +94,38 @@ export default function CreateEventModal({ onClose, onCreated }) {
 
           <div className="grid-2">
             {form.type === 'movie' && (
-              <div className="form-group">
-                <label>Duration (mins)</label>
-                <input className="form-input" type="number" value={form.duration} onChange={e => set('duration', e.target.value)} />
-              </div>
+              <>
+                <div className="form-group">
+                  <label>Duration (mins)</label>
+                  <input className="form-input" type="number" value={form.duration} onChange={e => set('duration', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Language</label>
+                  <input className="form-input" placeholder="e.g. Hindi, English" value={form.language} onChange={e => set('language', e.target.value)} />
+                </div>
+              </>
             )}
             {form.type === 'concert' && (
               <div className="form-group">
                 <label>Artist</label>
                 <input className="form-input" value={form.artist} onChange={e => set('artist', e.target.value)} />
               </div>
+            )}
+            {form.type === 'train' && (
+              <>
+                <div className="form-group">
+                  <label>Train Number</label>
+                  <input className="form-input" value={form.trainNumber || ''} onChange={e => set('trainNumber', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>From Station</label>
+                  <input className="form-input" value={form.fromStation || ''} onChange={e => set('fromStation', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>To Station</label>
+                  <input className="form-input" value={form.toStation || ''} onChange={e => set('toStation', e.target.value)} />
+                </div>
+              </>
             )}
           </div>
 

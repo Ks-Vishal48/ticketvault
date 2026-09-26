@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getEvents } from '../services/api';
 import EventCard from '../components/common/EventCard';
 import { Search, ChevronRight, Zap, Shield, RefreshCw } from 'lucide-react';
@@ -12,6 +12,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [activeType, setActiveType] = useState('all');
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchEvents();
@@ -20,7 +21,7 @@ export default function HomePage() {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const params = { limit: 8 };
+      const params = { limit: 10};
       if (activeType !== 'all') params.type = activeType;
       const res = await getEvents(params);
       setEvents(res.data.events);
@@ -33,7 +34,7 @@ export default function HomePage() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    window.location.href = `/events?search=${search}`;
+    navigate(`/events?search=${encodeURIComponent(search)}`);
   };
 
   return (

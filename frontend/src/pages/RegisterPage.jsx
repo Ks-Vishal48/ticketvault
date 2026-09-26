@@ -26,7 +26,7 @@ export default function RegisterPage() {
       login(res.data.token, res.data.user);
       toast.success('Account created successfully!');
       const role = res.data.user.role;
-      navigate(role === 'vendor' ? '/vendor' : '/');
+      navigate(role === 'vendor' ? '/vendor' : '/customer');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {

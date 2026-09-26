@@ -29,7 +29,7 @@ function AppRoutes() {
         <Route path="/login" element={user ? <Navigate to="/" /> : <LoginPage />} />
         <Route path="/register" element={user ? <Navigate to="/" /> : <RegisterPage />} />
 
-        <Route path="/dashboard" element={
+        <Route path="/customer" element={
           <ProtectedRoute roles={['customer']}>
             <CustomerDashboard />
           </ProtectedRoute>

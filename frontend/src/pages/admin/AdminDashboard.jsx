@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAdminStats, getAdminUsers, getAdminEvents, toggleUserStatus, updateUserRole, getAllBookings } from '../../services/api';
-import { Users, Ticket, Calendar, DollarSign, CheckCircle, XCircle } from 'lucide-react';
+import API from '../../services/api';
+import { Users, Ticket, Calendar, DollarSign, CheckCircle, XCircle, Ban } from 'lucide-react';
 import { formatDate, formatCurrency, getEventTypeBadge, getBookingStatusBadge } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import styles from './AdminDashboard.module.css';
@@ -60,6 +61,17 @@ export default function AdminDashboard() {
       toast.success('Role updated');
       fetchUsers();
     } catch { toast.error('Failed to update role'); }
+  };
+
+  const handleEventStatus = async (id, status) => {
+    if (!confirm(`Set this event as "${status}"?`)) return;
+    try {
+      await API.put(`/admin/events/${id}/status`, { status });
+      toast.success(`Event ${status}`);
+      fetchEvents();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update event');
+    }
   };
 
   if (loading) return <div className="page-loader"><div className={`spinner ${styles.spinnerSmall}`} /></div>;
@@ -152,7 +164,7 @@ export default function AdminDashboard() {
           {tab === 'events' && (
             <div className={styles.table}>
               <div className={`${styles.tableRow} ${styles.tableHeader}`}>
-                <span>Title</span><span>Type</span><span>Vendor</span><span>Date</span><span>Status</span>
+                <span>Title</span><span>Type</span><span>Vendor</span><span>Date</span><span>Status</span><span>Action</span>
               </div>
               {events.map(e => (
                 <div key={e._id} className={styles.tableRow}>
@@ -161,6 +173,20 @@ export default function AdminDashboard() {
                   <span className={styles.rowTextMuted}>{e.vendor?.name}</span>
                   <span className={styles.rowTextMuted}>{formatDate(e.date)}</span>
                   <span className={`badge badge-${e.status === 'published' ? 'confirmed' : 'cancelled'}`}>{e.status}</span>
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    {e.status === 'published' && (
+                      <button className="btn btn-sm btn-danger"
+                        onClick={() => handleEventStatus(e._id, 'cancelled')}>
+                        <Ban size={12} /> Cancel
+                      </button>
+                    )}
+                    {e.status === 'cancelled' && (
+                      <button className="btn btn-sm btn-success"
+                        onClick={() => handleEventStatus(e._id, 'published')}>
+                        <CheckCircle size={12} /> Restore
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

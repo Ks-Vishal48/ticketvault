@@ -24,6 +24,14 @@ export default function EventsPage() {
     fetchEvents();
   }, [filters]);
 
+  // Re-read search param if URL changes (e.g. navigating from homepage search)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    if (urlSearch && urlSearch !== filters.search) {
+      setFilters(f => ({ ...f, search: urlSearch, page: 1 }));
+    }
+  }, [searchParams]);
+
   const fetchEvents = async () => {
     setLoading(true);
     try {

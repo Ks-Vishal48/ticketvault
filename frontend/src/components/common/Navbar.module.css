@@ -10,6 +10,9 @@
   align-items: center;
   justify-content: space-between;
   height: 64px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 .logo {
   display: flex;
