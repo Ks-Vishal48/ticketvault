@@ -29,6 +29,7 @@ const eventSchema = new mongoose.Schema({
   seats: [seatSchema],
   totalSeats: { type: Number, required: true },
   availableSeats: { type: Number },
+  minPrice: { type: Number, default: 0 },
   status: { type: String, enum: ['draft', 'published', 'cancelled', 'completed'], default: 'published' },
   tags: [String],
   // For movies
@@ -45,11 +46,17 @@ const eventSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 eventSchema.pre('save', function () {
-  if (this.isModified('seats')) {
+  if (this.isModified('seats') && this.seats) {
     this.availableSeats = this.seats.filter(s => !s.isBooked).length;
+    if (this.seats.length > 0) {
+      this.minPrice = Math.min(...this.seats.map(s => s.price));
+    }
   }
   if (this.isNew && this.availableSeats === undefined) {
     this.availableSeats = this.totalSeats;
+  }
+  if (this.isNew && (!this.minPrice || this.minPrice === 0) && this.seats && this.seats.length > 0) {
+    this.minPrice = Math.min(...this.seats.map(s => s.price));
   }
 });
 

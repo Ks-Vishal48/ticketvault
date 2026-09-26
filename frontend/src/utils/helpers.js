@@ -2,20 +2,32 @@ import { format, parseISO } from 'date-fns';
 
 export const formatDate = (date) => {
   if (!date) return '';
-  const d = typeof date === 'string' ? parseISO(date) : date;
-  return format(d, 'MMM dd, yyyy');
+  try {
+    const d = typeof date === 'string' ? parseISO(date) : date;
+    return format(d, 'MMM dd, yyyy');
+  } catch {
+    return '';
+  }
 };
 
 export const formatDateTime = (date) => {
   if (!date) return '';
-  const d = typeof date === 'string' ? parseISO(date) : date;
-  return format(d, 'MMM dd, yyyy HH:mm');
+  try {
+    const d = typeof date === 'string' ? parseISO(date) : date;
+    return format(d, 'MMM dd, yyyy HH:mm');
+  } catch {
+    return '';
+  }
 };
 
 export const formatTime = (date) => {
   if (!date) return '';
-  const d = typeof date === 'string' ? parseISO(date) : date;
-  return format(d, 'HH:mm');
+  try {
+    const d = typeof date === 'string' ? parseISO(date) : date;
+    return format(d, 'HH:mm');
+  } catch {
+    return '';
+  }
 };
 
 export const formatCurrency = (amount) => {

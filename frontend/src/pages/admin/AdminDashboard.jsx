@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getAdminStats, getAdminUsers, getAdminEvents, toggleUserStatus, updateUserRole, getAllBookings } from '../../services/api';
-import API from '../../services/api';
+import {
+  getAdminStats, getAdminUsers, getAdminEvents,
+  toggleUserStatus, updateUserRole, getAllBookings, updateEventStatus
+} from '../../services/api';
 import { Users, Ticket, Calendar, DollarSign, CheckCircle, XCircle, Ban } from 'lucide-react';
 import { formatDate, formatCurrency, getEventTypeBadge, getBookingStatusBadge } from '../../utils/helpers';
 import toast from 'react-hot-toast';
@@ -66,7 +68,7 @@ export default function AdminDashboard() {
   const handleEventStatus = async (id, status) => {
     if (!confirm(`Set this event as "${status}"?`)) return;
     try {
-      await API.put(`/admin/events/${id}/status`, { status });
+      await updateEventStatus(id, status);
       toast.success(`Event ${status}`);
       fetchEvents();
     } catch (err) {
@@ -145,7 +147,7 @@ export default function AdminDashboard() {
                     className={styles.selectInput}
                     value={u.role}
                     onChange={e => handleRoleChange(u._id, e.target.value)}>
-                    {['customer', 'vendor'].map(r => <option key={r}>{r}</option>)}
+                    {['customer', 'vendor', 'admin'].map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
                   <span className={u.isActive ? styles.activeStatus : styles.inactiveStatus}>
                     {u.isActive ? 'Active' : 'Inactive'}

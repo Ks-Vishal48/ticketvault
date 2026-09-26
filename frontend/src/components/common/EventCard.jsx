@@ -6,7 +6,9 @@ import styles from './EventCard.module.css';
 const EVENT_ICONS = { movie: '🎬', concert: '🎵', train: '🚆', sports: '⚽', theater: '🎭', other: '🎟️' };
 
 export default function EventCard({ event }) {
-  const minPrice = event.seats?.length
+  const minPrice = event.minPrice != null
+    ? event.minPrice
+    : event.seats?.length
     ? Math.min(...event.seats.map(s => s.price))
     : 0;
 

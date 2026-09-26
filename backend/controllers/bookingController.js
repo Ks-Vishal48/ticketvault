@@ -11,6 +11,10 @@ const getStripe = () => {
 exports.createPaymentIntent = async (req, res) => {
   try {
     const { eventId, seatNumbers } = req.body;
+    if (!Array.isArray(seatNumbers) || seatNumbers.length === 0) {
+      return res.status(400).json({ message: 'Please select at least one seat' });
+    }
+
     const event = await Event.findById(eventId);
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
@@ -53,6 +57,10 @@ exports.createPaymentIntent = async (req, res) => {
 exports.confirmBooking = async (req, res) => {
   try {
     const { eventId, seatNumbers, paymentIntentId } = req.body;
+    if (!Array.isArray(seatNumbers) || seatNumbers.length === 0) {
+      return res.status(400).json({ message: 'Please select at least one seat' });
+    }
+
     const event = await Event.findById(eventId);
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
@@ -87,6 +95,7 @@ exports.confirmBooking = async (req, res) => {
       selectedSeats.push({ seatNumber: seat.seatNumber, row: seat.row, category: seat.category, price: seat.price });
     }
 
+    event.markModified('seats');
     event.availableSeats = event.seats.filter(s => !s.isBooked).length;
     await event.save();
 
@@ -104,9 +113,10 @@ exports.confirmBooking = async (req, res) => {
       .populate('event', 'title date venue type image')
       .populate('user', 'name email');
 
-    // Emit real-time update via socket (attached in server.js)
-    if (req.io) {
-      req.io.to(`event-${eventId}`).emit('seatsUpdated', {
+    // Emit real-time update via socket
+    const io = req.io || req.app?.get('io');
+    if (io) {
+      io.to(`event-${eventId}`).emit('seatsUpdated', {
         eventId,
         seats: event.seats,
         availableSeats: event.availableSeats,
@@ -135,10 +145,15 @@ exports.getUserBookings = async (req, res) => {
 exports.getBookingById = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
-      .populate('event', 'title date venue type image artist')
+      .populate('event', 'title date venue type image artist vendor')
       .populate('user', 'name email phone');
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
-    if (booking.user._id.toString() !== req.user._id.toString() && req.user.role === 'customer') {
+
+    const isOwner = booking.user._id.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    const isVendorOwner = req.user.role === 'vendor' && booking.event?.vendor?.toString() === req.user._id.toString();
+
+    if (!isOwner && !isAdmin && !isVendorOwner) {
       return res.status(403).json({ message: 'Not authorized' });
     }
     res.json(booking);
@@ -152,8 +167,12 @@ exports.cancelBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id).populate('event');
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
-    if (booking.user.toString() !== req.user._id.toString() && req.user.role === 'customer') {
-      return res.status(403).json({ message: 'Not authorized' });
+
+    const isOwner = (booking.user._id || booking.user).toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to cancel this booking' });
     }
     if (booking.status === 'cancelled') return res.status(400).json({ message: 'Already cancelled' });
 
@@ -184,15 +203,20 @@ exports.cancelBooking = async (req, res) => {
         if (seat) {
           seat.isBooked = false;
           seat.bookedBy = null;
+          seat.isHeld = false;
+          seat.heldBy = null;
+          seat.heldUntil = null;
         }
       });
+      event.markModified('seats');
       event.availableSeats = event.seats.filter(s => !s.isBooked).length;
       await event.save();
 
       // Emit real-time update
-      if (req.io) {
-        req.io.to(`event-${event._id}`).emit('seatsUpdated', {
-          eventId: event._id,
+      const io = req.io || req.app?.get('io');
+      if (io) {
+        io.to(`event-${event._id}`).emit('seatsUpdated', {
+          eventId: event._id.toString(),
           seats: event.seats,
           availableSeats: event.availableSeats,
         });
@@ -208,8 +232,10 @@ exports.cancelBooking = async (req, res) => {
     await booking.save();
 
     // Notify user via socket
-    if (req.io) {
-      req.io.to(`user-${booking.user}`).emit('bookingCancelled', {
+    const io = req.io || req.app?.get('io');
+    if (io) {
+      const targetUserId = (booking.user._id || booking.user).toString();
+      io.to(`user-${targetUserId}`).emit('bookingCancelled', {
         bookingId: booking._id,
         bookingRef: booking.bookingRef,
         refundAmount,
@@ -246,7 +272,6 @@ exports.getAllBookings = async (req, res) => {
 // Vendor: bookings for vendor's events
 exports.getVendorBookings = async (req, res) => {
   try {
-    const Event = require('../models/Event');
     const vendorEvents = await Event.find({ vendor: req.user._id }).select('_id');
     const eventIds = vendorEvents.map(e => e._id);
     const bookings = await Booking.find({ event: { $in: eventIds } })

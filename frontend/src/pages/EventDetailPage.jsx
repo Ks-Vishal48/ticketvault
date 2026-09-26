@@ -46,7 +46,6 @@ function StripeCheckoutForm({ selectedSeats, event, onSuccess }) {
 
   const handlePay = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements) return; // Stripe.js not loaded yet
 
     setProcessing(true);
     setCardError('');
@@ -56,29 +55,45 @@ function StripeCheckoutForm({ selectedSeats, event, onSuccess }) {
       const res = await createPaymentIntent({ eventId: event._id, seatNumbers: selectedSeats });
       const { clientSecret, paymentIntentId } = res.data;
 
+      // Handle demo mode: backend returns demo_secret_ / demo_ ID
+      if (clientSecret?.startsWith('demo_secret_') || !stripe || !elements) {
+        const bookingRes = await confirmBooking({
+          eventId: event._id,
+          seatNumbers: selectedSeats,
+          paymentIntentId: paymentIntentId || ('demo_' + Date.now()),
+        });
+        toast.success('Booking confirmed! (Demo Mode)');
+        onSuccess(bookingRes.data);
+        return;
+      }
+
       // Step 2: Confirm the card payment with Stripe directly from the browser
-      // This is where the real card details are sent — they never touch your server
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) {
+        throw new Error('Card element not loaded');
+      }
+
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
-          card: elements.getElement(CardElement),
+          card: cardElement,
         },
       });
 
       if (error) {
-        // Stripe declined or card error (e.g. insufficient funds, wrong CVC)
+        // Stripe declined or card error
         setCardError(error.message);
         toast.error(error.message);
         return;
       }
 
       if (paymentIntent.status === 'succeeded') {
-        // Step 3: Tell your backend the payment went through — it marks seats as booked
-        await confirmBooking({ eventId: event._id, seatNumbers: selectedSeats, paymentIntentId });
+        // Step 3: Tell backend payment went through
+        const bookingRes = await confirmBooking({ eventId: event._id, seatNumbers: selectedSeats, paymentIntentId });
         toast.success('Booking confirmed!');
-        onSuccess();
+        onSuccess(bookingRes.data);
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Booking failed');
+      toast.error(err.response?.data?.message || err.message || 'Booking failed');
     } finally {
       setProcessing(false);
     }
@@ -237,7 +252,13 @@ export default function EventDetailPage() {
               </div>
             ) : (
               <div className="card">
-                <CheckoutForm selectedSeats={selectedSeats} event={event} onSuccess={() => navigate('/customer')} />
+                <CheckoutForm
+                  selectedSeats={selectedSeats}
+                  event={event}
+                  onSuccess={(bookingData) => {
+                    navigate('/booking-success', { state: { booking: bookingData } });
+                  }}
+                />
               </div>
             )}
           </div>

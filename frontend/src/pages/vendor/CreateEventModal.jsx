@@ -140,7 +140,7 @@ export default function CreateEventModal({ onClose, onCreated }) {
                     value={cat.rows.join(',')}
                     onChange={e => {
                       const updated = [...layout];
-                      updated[i] = { ...cat, rows: e.target.value.split(',').map(r => r.trim().toUpperCase()) };
+                      updated[i] = { ...cat, rows: e.target.value.split(',').map(r => r.trim().toUpperCase()).filter(Boolean) };
                       setLayout(updated);
                     }} />
                 </div>

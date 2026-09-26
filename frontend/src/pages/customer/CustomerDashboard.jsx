@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getUserBookings, cancelBooking } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { Ticket, Calendar, MapPin, X } from 'lucide-react';
@@ -41,7 +42,7 @@ export default function CustomerDashboard() {
     <div className={styles.pageWrapper}>
       <div className="container">
         <h1 className={styles.title}>
-          Welcome, {user.name}!
+          Welcome, {user?.name || 'Customer'}!
         </h1>
         <p className={styles.subtitle}>Your bookings and account info</p>
 
@@ -53,7 +54,7 @@ export default function CustomerDashboard() {
             <div className={`card ${styles.centerCard}`}>
               <p className={styles.emptyEmoji}>🎟️</p>
               <p className={styles.emptyText}>No bookings yet. Start exploring events!</p>
-              <a href="/events" className={`btn btn-primary ${styles.browseButton}`}>Browse Events</a>
+              <Link to="/events" className={`btn btn-primary ${styles.browseButton}`}>Browse Events</Link>
             </div>
           ) : (
             <div className={styles.bookingList}>
@@ -62,7 +63,7 @@ export default function CustomerDashboard() {
                   <div className={styles.bookingMain}>
                     <div className={styles.bookingIcon}><Ticket size={24} color="#6c63ff" /></div>
                     <div className={styles.bookingInfo}>
-                      <h3 className={styles.bookingTitle}>{booking.event?.title}</h3>
+                      <h3 className={styles.bookingTitle}>{booking.event?.title || 'Event'}</h3>
                       <p className={styles.bookingMeta}>
                         <Calendar size={14} /> {formatDate(booking.event?.date)}
                       </p>
@@ -80,7 +81,7 @@ export default function CustomerDashboard() {
                   </div>
                   <div className={styles.bookingSummary}>
                     <p className={styles.bookingMeta}>
-                      Seats: {booking.seats.map(s => s.seatNumber).join(', ')}
+                      Seats: {booking.seats?.map(s => s.seatNumber).join(', ') || 'N/A'}
                     </p>
                     {booking.status === 'confirmed' && (
                       <button className="btn btn-danger btn-sm" onClick={() => handleCancel(booking._id)}>

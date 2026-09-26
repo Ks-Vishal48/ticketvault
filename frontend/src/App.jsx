@@ -14,6 +14,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import VendorDashboard from './pages/vendor/VendorDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import BookingSuccessPage from './pages/BookingSuccessPage';
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -46,6 +47,13 @@ function AppRoutes() {
             <AdminDashboard />
           </ProtectedRoute>
         } />
+
+        <Route path="/booking-success" element={
+          <ProtectedRoute roles={['customer', 'vendor', 'admin']}>
+            <BookingSuccessPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/booking/success" element={<Navigate to="/booking-success" replace />} />
 
         <Route path="*" element={
           <div className={styles.notFound}>

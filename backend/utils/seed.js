@@ -251,11 +251,13 @@ const seed = async () => {
   for (const evData of events) {
     const { seatCategories, ...rest } = evData;
     const seats = generateSeats(seatCategories);
+    const minPrice = seats.length ? Math.min(...seats.map(s => s.price)) : 0;
     await Event.create({
       ...rest,
       seats,
       totalSeats: seats.length,
       availableSeats: seats.length,
+      minPrice,
       status: 'published',
     });
   }

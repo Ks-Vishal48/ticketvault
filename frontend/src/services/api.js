@@ -54,5 +54,6 @@ export const getAdminUsers = (params) => API.get('/admin/users', { params });
 export const toggleUserStatus = (id) => API.put(`/admin/users/${id}/toggle`);
 export const updateUserRole = (id, role) => API.put(`/admin/users/${id}/role`, { role });
 export const getAdminEvents = (params) => API.get('/admin/events', { params });
+export const updateEventStatus = (id, status) => API.put(`/admin/events/${id}/status`, { status });
 
 export default API;

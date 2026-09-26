@@ -6,7 +6,11 @@ import { Ticket, Mail, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import styles from './LoginPage.module.css';
 
-const getRoleRedirect = (role) => '/';
+const getRoleRedirect = (role) => {
+  if (role === 'admin') return '/admin';
+  if (role === 'vendor') return '/vendor';
+  return '/customer';
+};
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });

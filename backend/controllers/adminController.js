@@ -58,6 +58,9 @@ exports.toggleUserStatus = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'You cannot deactivate your own admin account' });
+    }
     user.isActive = !user.isActive;
     await user.save();
     res.json({ message: `User ${user.isActive ? 'activated' : 'deactivated'}`, user });
@@ -69,20 +72,34 @@ exports.toggleUserStatus = async (req, res) => {
 exports.updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
+    const allowedRoles = ['customer', 'vendor', 'admin'];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ message: 'Invalid role specified' });
+    }
+
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) return res.status(404).json({ message: 'User not found' });
 
     // Enforce max 1 admin
     if (role === 'admin') {
       const adminCount = await User.countDocuments({ role: 'admin' });
-      const targetUser = await User.findById(req.params.id);
       // Allow if target is already admin (no change), block if adding a new admin
       if (targetUser.role !== 'admin' && adminCount >= 1) {
         return res.status(400).json({ message: 'Only 1 admin account is allowed on this platform' });
       }
     }
 
-    const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json(user);
+    // Prevent demoting the only admin
+    if (targetUser.role === 'admin' && role !== 'admin') {
+      const adminCount = await User.countDocuments({ role: 'admin' });
+      if (adminCount <= 1) {
+        return res.status(400).json({ message: 'Cannot demote the only platform admin' });
+      }
+    }
+
+    targetUser.role = role;
+    await targetUser.save();
+    res.json(targetUser);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

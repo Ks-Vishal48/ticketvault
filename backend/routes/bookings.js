@@ -5,18 +5,6 @@ const {
 } = require('../controllers/bookingController');
 const { auth, requireRole } = require('../middleware/auth');
 
-// Inject io into req
-router.use((req, res, next) => {
-  req.io = req.app.get('io');
-  next();
-});
-
-// Inject io into req + apply auth to all routes
-router.use((req, res, next) => {
-  req.io = req.app.get('io');
-  next();
-});
-
 router.use(auth);  // all booking routes require login
 
 router.post('/payment-intent', createPaymentIntent);

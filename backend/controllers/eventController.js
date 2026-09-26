@@ -25,12 +25,14 @@ exports.createEvent = async (req, res) => {
   try {
     const { seatLayout, ...eventData } = req.body;
     const seats = generateSeats(seatLayout || {});
+    const minPrice = seats.length ? Math.min(...seats.map(s => s.price)) : 0;
     const event = await Event.create({
       ...eventData,
       vendor: req.user._id,
       seats,
       totalSeats: seats.length,
       availableSeats: seats.length,
+      minPrice,
     });
     res.status(201).json(event);
   } catch (err) {
@@ -136,9 +138,14 @@ exports.getVendorEvents = async (req, res) => {
 exports.holdSeats = async (req, res) => {
   try {
     const { seatNumbers } = req.body;
+    if (!Array.isArray(seatNumbers) || seatNumbers.length === 0) {
+      return res.status(400).json({ message: 'No seat numbers provided' });
+    }
+
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
+    const now = new Date();
     const holdUntil = new Date(Date.now() + 10 * 60 * 1000); // 10 min hold
     const seatUpdates = [];
 
@@ -147,7 +154,7 @@ exports.holdSeats = async (req, res) => {
       if (!seat) return res.status(400).json({ message: `Seat ${seatNum} not found` });
       if (seat.isBooked) return res.status(400).json({ message: `Seat ${seatNum} is already booked` });
       if (seat.isHeld && seat.heldBy?.toString() !== req.user._id.toString()) {
-        if (seat.heldUntil > new Date()) {
+        if (seat.heldUntil && new Date(seat.heldUntil) > now) {
           return res.status(400).json({ message: `Seat ${seatNum} is temporarily held` });
         }
       }
@@ -156,8 +163,21 @@ exports.holdSeats = async (req, res) => {
       seat.heldUntil = holdUntil;
       seatUpdates.push(seat);
     }
+
+    event.markModified('seats');
     await event.save();
-      req.io.to(req.params.id).emit('seatsUpdated', { eventId: req.params.id, seats: seatNumbers, isHeld: true, status: 'held', heldBy: req.user._id.toString()  });
+
+    const io = req.io || req.app?.get('io');
+    if (io) {
+      io.to(`event-${req.params.id}`).emit('seatsUpdated', {
+        eventId: req.params.id,
+        seats: seatNumbers,
+        isHeld: true,
+        status: 'held',
+        heldBy: req.user._id.toString(),
+      });
+    }
+
     res.json({ message: 'Seats held successfully', holdUntil, seats: seatUpdates });
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -8,14 +8,52 @@ export default function SeatMap({ event, selectedSeats, onSeatToggle, currentUse
 
   useEffect(() => {
     if (!event?._id) return;
+
+    if (!socket.connected) {
+      socket.connect();
+    }
     socket.emit('joinEvent', event._id);
 
-     const handleUpdate = (data) => { if (data.eventId === event._id) { setSeats((prevSeats) => prevSeats.map((seat) => { const identifier = seat.seatNumber || seat.id; if (data.seats.includes(identifier)) { return { ...seat, isHeld: data.isHeld ?? (data.status === 'held'), status: data.status || 'held', heldBy: data.heldBy || null, }; } return seat; }) ); } };
+    const handleUpdate = (data) => {
+      if (data.eventId?.toString() !== event._id?.toString()) return;
+
+      // Case 1: Full seats array broadcast from confirmBooking or cancelBooking
+      if (Array.isArray(data.seats) && data.seats.length > 0 && typeof data.seats[0] === 'object') {
+        setSeats(data.seats);
+        return;
+      }
+
+      // Case 2: Array of seat numbers from holdSeats
+      if (Array.isArray(data.seats)) {
+        setSeats((prevSeats) =>
+          prevSeats.map((seat) => {
+            const identifier = seat.seatNumber || seat.id;
+            if (data.seats.includes(identifier)) {
+              return {
+                ...seat,
+                isHeld: data.isHeld ?? (data.status === 'held'),
+                heldBy: data.heldBy || null,
+              };
+            }
+            return seat;
+          })
+        );
+      }
+    };
+
     socket.on('seatsUpdated', handleUpdate);
+
     return () => {
+      socket.emit('leaveEvent', event._id);
       socket.off('seatsUpdated', handleUpdate);
     };
   }, [event?._id]);
+
+  useEffect(() => {
+    if (event?.seats) {
+      setSeats(event.seats);
+    }
+  }, [event?.seats]);
 
   // Group seats by row
   const rows = seats.reduce((acc, seat) => {
